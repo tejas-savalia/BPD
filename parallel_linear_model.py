@@ -59,13 +59,13 @@ for ids in traces_melt.ID.unique():
     traces_melt.loc[traces_melt['ID'] == ids, 'BPD'] = data.loc[data['ID'] == int(ids), 'BPD#'].unique()[0]
     traces_melt.loc[traces_melt['ID'] == ids, 'Condition'] = data.loc[data['ID'] == int(ids), 'Condition'].unique()[0]
     
-
+traces_melt['mean_centered_BPD'] = traces_melt['BPD'] - np.mean(traces_melt['BPD'].values)
 
 def lm_params(trace_no):
     parameters = 'pos_alpha_subj'
     temp_data = traces_melt.loc[((traces_melt['trace#'] ==trace_no) & (traces_melt['parameters'].str.startswith(parameters)))].rename(columns={'parameter values':'param_vals'})
     
-    res = smf.ols(formula='param_vals ~  BPD*Session*C(Condition)', data=temp_data).fit()
+    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*C(Condition)', data=temp_data).fit()
     if trace_no%100 == 0:
         print(trace_no)
     return res.params
@@ -77,14 +77,14 @@ pool = mp.Pool()
 pos_alpha_results = pd.concat(pool.map(lm_params, trace_nos), axis = 1)
 print(pos_alpha_results)
 pos_alpha = pos_alpha_results.reset_index().rename(columns={'index':'coefficient'})
-pos_alpha.to_csv('shuffled_alpha_g.csv')
+pos_alpha.to_csv('LR coefficients/mean_centered_shuffled_alpha_g.csv')
 
 
 def lm_params(trace_no):
     parameters = 'alpha_subj'
     temp_data = traces_melt.loc[((traces_melt['trace#'] ==trace_no) & (traces_melt['parameters'].str.startswith(parameters)))].rename(columns={'parameter values':'param_vals'})
     
-    res = smf.ols(formula='param_vals ~  BPD*Session*C(Condition)', data=temp_data).fit()
+    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*C(Condition)', data=temp_data).fit()
     if trace_no%100 == 0:
         print(trace_no)
     return res.params
@@ -96,14 +96,14 @@ pool = mp.Pool()
 alpha_results = pd.concat(pool.map(lm_params, trace_nos), axis = 1)
 print(alpha_results)
 alpha = alpha_results.reset_index().rename(columns={'index':'coefficient'})
-alpha.to_csv('shuffled_alpha_l.csv')
+alpha.to_csv('LR coefficients/mean_centered_shuffled_alpha_l.csv')
 
 
 def lm_params(trace_no):
     parameters = 'v'
     temp_data = traces_melt.loc[((traces_melt['trace#'] ==trace_no) & (traces_melt['parameters'].str.startswith(parameters)))].rename(columns={'parameter values':'param_vals'})
     
-    res = smf.ols(formula='param_vals ~  BPD*Session*C(Condition)', data=temp_data).fit()
+    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*C(Condition)', data=temp_data).fit()
     if trace_no%100 == 0:
         print(trace_no)
     return res.params
@@ -115,5 +115,5 @@ pool = mp.Pool()
 beta_results = pd.concat(pool.map(lm_params, trace_nos), axis = 1)
 print(beta_results)
 beta = beta_results.reset_index().rename(columns={'index':'coefficient'})
-beta.to_csv('shuffled_beta.csv')
+beta.to_csv('LR coefficients/mean_centered_shuffled_beta.csv')
 
