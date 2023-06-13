@@ -39,12 +39,16 @@ data = data.sort_values(['ID', 'Session', 'Block'], ascending=[True, True, True]
 # # Models using Traces
 
 
-traces = pd.read_csv('non_hierarchical_traces.csv').drop('Unnamed: 0', axis = 1)
+traces = pd.read_csv('non_hierarchical_traces_thin5.csv').drop('Unnamed: 0', axis = 1).reset_index()
+
 rng = np.random.default_rng()
 new_traces = pd.DataFrame({'trace#': np.arange(3000)})
-for column in traces.columns:
-    new_traces[column] = rng.permuted(traces[column].values)
-traces_melt = new_traces.melt(id_vars='trace#', var_name='parameters', value_name='parameter values')
+#To not shuffle
+# for column in traces.columns:
+#     new_traces[column] = rng.permuted(traces[column].values)
+# traces_melt = new_traces.melt(id_vars='trace#', var_name='parameters', value_name='parameter values')
+traces_melt = traces.melt(id_vars='trace#', var_name='parameters', value_name='parameter values')
+
 traces_melt = traces_melt[traces_melt.parameters.str.contains('subj')]
 traces_melt.loc[traces_melt.parameters.str.contains('Neutral'), 'Session'] = 'Neutral'
 traces_melt.loc[traces_melt.parameters.str.contains('Stressed'), 'Session'] = 'Stressed'
