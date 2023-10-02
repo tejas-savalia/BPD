@@ -88,7 +88,7 @@ for ids in data.ID.unique():
         subject = subject + 1
 new_data = pd.concat(new_data).drop('ID', axis = 1)
 
-traces = pd.read_csv('model_traces/10k40k5p6thin_indsubj_8chain_traces.csv').drop('Unnamed: 0', axis = 1)
+traces = pd.read_csv('model_traces/10k4k5p6thin_indsubj_traces_unity_allpairs.csv').drop('Unnamed: 0', axis = 1)
 traces['trace#'] = np.tile(np.arange(1000), 148)
 # traces['alpha(Neutral)'] = np.exp(traces['alpha(Neutral)'])/(1+np.exp(traces['alpha(Neutral)']))
 # traces['pos_alpha(Neutral)'] = np.exp(traces['pos_alpha(Neutral)'])/(1+np.exp(traces['pos_alpha(Neutral)']))
@@ -108,27 +108,28 @@ traces_melt.loc[traces_melt['Condition'] == 2, 'Condition'] = 'Social'
 traces_melt['mean_centered_BPD'] = traces_melt['BPD'] - np.mean(traces_melt['BPD'].values)
 
 
-# def fit_lm_beta(trace_no):
-#     param = 'v'
-#     temp_df = traces_melt.loc[((traces_melt['trace#'] == trace_no) & (traces_melt['parameters'].str.startswith(param)))]
-#     res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*Condition', data=temp_df).fit()
-#     if trace_no%100 == 0:
-#         print(trace_no)
-#     return res.params
+def fit_lm_beta(trace_no):
+    param = 'v'
+    temp_df = traces_melt.loc[((traces_melt['trace#'] == trace_no) & (traces_melt['parameters'].str.startswith(param)))]
+    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*Condition + (1|subject)', data=temp_df).fit()
+    if trace_no%100 == 0:
+        print(trace_no)
+    return res.params
 
 
 
-# trace_nos = np.arange(1000)
-# pool = mp.Pool()
-# beta_results = pd.concat(pool.map(fit_lm_beta, trace_nos), axis = 1)
-# print(beta_results)
-# beta = beta_results.reset_index().rename(columns={'index':'coefficient'})
-# beta.to_csv('LR coefficients/mean_centered_indsub_beta.csv')
+trace_nos = np.arange(1000)
+pool = mp.Pool()
+beta_results = pd.concat(pool.map(fit_lm_beta, trace_nos), axis = 1)
+print(beta_results)
+beta = beta_results.reset_index().rename(columns={'index':'coefficient'})
+beta.to_csv('LR_coefficients/mean_centered_indsub_beta_randeff_allpairs.csv')
 
 def fit_lm_alpha(trace_no):
     param = 'alpha'
     temp_df = traces_melt.loc[((traces_melt['trace#'] == trace_no) & (traces_melt['parameters'].str.startswith(param)))]
-    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*Condition', data=temp_df).fit()
+    temp_df['param_vals'] = np.exp(temp_df['param_vals'])/(1 + np.exp(temp_df['param_vals']))
+    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*Condition + (1|subject)', data=temp_df).fit()
     if trace_no%100 == 0:
         print(trace_no)
     return res.params
@@ -139,7 +140,7 @@ pool = mp.Pool()
 alpha_loss_results = pd.concat(pool.map(fit_lm_alpha, trace_nos), axis = 1)
 print(alpha_loss_results)
 alpha_loss = alpha_loss_results.reset_index().rename(columns={'index':'coefficient'})
-alpha_loss.to_csv('LR coefficients/mean_centered_indsub_alpha_loss.csv')
+alpha_loss.to_csv('LR_coefficients/mean_centered_indsub_alpha_loss_transformed_randeff_allpairs.csv')
 
 print('Alpha Loss done')
 
@@ -147,7 +148,9 @@ print('Alpha Loss done')
 def fit_lm_pos_alpha(trace_no):
     param = 'pos_alpha'
     temp_df = traces_melt.loc[((traces_melt['trace#'] == trace_no) & (traces_melt['parameters'].str.startswith(param)))]
-    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*Condition', data=temp_df).fit()
+    temp_df['param_vals'] = np.exp(temp_df['param_vals'])/(1 + np.exp(temp_df['param_vals']))
+
+    res = smf.ols(formula='param_vals ~  mean_centered_BPD*Session*Condition + (1|subject)', data=temp_df).fit()
     if trace_no%100 == 0:
         print(trace_no)
     return res.params
@@ -159,7 +162,7 @@ pool = mp.Pool()
 alpha_gain_results = pd.concat(pool.map(fit_lm_pos_alpha, trace_nos), axis = 1)
 print(alpha_gain_results)
 alpha_gain = alpha_gain_results.reset_index().rename(columns={'index':'coefficient'})
-alpha_gain.to_csv('LR coefficients/mean_centered_indsub_alpha_gain.csv')
+alpha_gain.to_csv('LR_coefficients/mean_centered_indsub_alpha_gain_transformed_randeff_allpairs.csv')
 
 
 # def lm_params(trace_no):

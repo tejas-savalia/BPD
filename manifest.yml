@@ -1,0 +1,7 @@
+---
+name: MPI
+host: unity
+notes: "<p>Note that mpiexec will pick up the node list and processor count from the
+  environment.\r\nIn most cases you should not be passing -np or any other parameters
+  to mpiexec\r\nIf your job needs to know the number of cpus per node, use <code>$SLURM_CPUS_ON_NODE</code></p>\r\n"
+script: main_job.sh

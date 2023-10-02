@@ -15,8 +15,8 @@ def fit_nonhrl(subject):
     print('Subject: ', subject)
     temp_df = df_to_fit.loc[df_to_fit.subj_idx == subject].reset_index().drop('index', axis = 1)
     # temp_firsthalf_df = temp_df[:int(len(temp_df)/2)]
-    temp_df_AB = temp_df.loc[temp_df['split_by'] == 0].reset_index().drop('index', axis = 1)
-    m_non_hrl = hddm.Hrl(temp_df_AB, depends_on = {'v':['Session'], 'alpha':['Session'], 'pos_alpha':['Session']}, p_outlier = 0.05, dual=True)
+    # temp_df_AB = temp_df.loc[temp_df['split_by'] == 0].reset_index().drop('index', axis = 1)
+    m_non_hrl = hddm.Hrl(temp_df, depends_on = {'v':['Session'], 'alpha':['Session'], 'pos_alpha':['Session']}, p_outlier = 0.05, dual=True)
     m_non_hrl.find_starting_values()
     m_non_hrl.sample(10000, burn=4000, thin = 6, dbname="traces.db", db="pickle")
     subj_traces = m_non_hrl.get_traces()
@@ -29,7 +29,7 @@ subj_id = np.arange(148)
 pool = mp.Pool()
 m_hrl_results_neutral = pd.concat(pool.map(fit_nonhrl, subj_id))
 # m_hrl_results = pd.concat(pool.map(fit_nonhrl, chain_id))
-m_hrl_results_neutral.to_csv('model_traces/10k4k5p6thin_indsubj_AB_traces.csv')
+m_hrl_results_neutral.to_csv('model_traces/10k4k5p6thin_indsubj_traces_unity_allpairs.csv')
 
 
 def fit_nonhrl_neutral(subject):
